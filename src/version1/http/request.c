@@ -5,14 +5,10 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-// 서버 주소 및 포트
-#define SERVER_IP "127.0.0.1"
-#define SERVER_PORT 39071
-
 #define BUFFER_SIZE 4096
 #define MAX_DOC_NAME_LENGTH 1024 // docName의 최대 길이 제한
 
-int main()
+int run_client(int target_port, char *target_host)
 {
     int sockfd;
     struct sockaddr_in server_addr;
@@ -48,8 +44,7 @@ int main()
         if (strlen(docName) >= MAX_DOC_NAME_LENGTH)
         {
             fprintf(stderr, "오류: 문서 이름이 너무 깁니다.\n");
-            close(sockfd);
-            exit(EXIT_FAILURE);
+            continue; // 문서 제목이 너무 길면 다음 반복으로 넘어감
         }
 
         // 소켓 생성
@@ -63,8 +58,8 @@ int main()
         // 서버 주소 설정
         memset(&server_addr, 0, sizeof(server_addr));
         server_addr.sin_family = AF_INET;
-        server_addr.sin_port = htons(SERVER_PORT);
-        if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) <= 0)
+        server_addr.sin_port = htons(target_port);
+        if (inet_pton(AF_INET, target_host, &server_addr.sin_addr) <= 0)
         {
             perror("서버 주소 설정 실패");
             close(sockfd);
@@ -84,7 +79,7 @@ int main()
                  "GET /?docName=%.1024s HTTP/1.1\r\n" // 최대 1024자까지 docName을 삽입
                  "Host: %s:%d\r\n"
                  "\r\n",
-                 docName, SERVER_IP, SERVER_PORT);
+                 docName, target_host, target_port);
 
         // 서버로 요청 전송
         if (send(sockfd, send_buffer, strlen(send_buffer), 0) < 0)
