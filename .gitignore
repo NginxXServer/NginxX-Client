@@ -1,0 +1,7 @@
+# Ignore the wrk_log directory
+wrk_log/
+
+# Ignore all executable files
+*.out
+*.exe
+*.bin
