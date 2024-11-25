@@ -7,6 +7,7 @@
 
 #define CMD_BUFFER_SIZE 2048 // 버퍼 크기 증가
 #define LOG_DIR "wrk/wrk_log"
+#define SCRIPT_DIR "wrk/wrk_script"
 
 // 디폴트 값 정의
 #define DEFAULT_THREADS "1"
@@ -25,18 +26,11 @@ void generate_log_filename(char *filename, size_t size)
              t->tm_hour, t->tm_min, t->tm_sec);
 }
 
-// 디렉토리 생성 함수
-void create_log_dir()
+// Lua 스크립트 파일이 존재하는지 확인하는 함수
+int file_exists(const char *filename)
 {
-    struct stat st = {0};
-    if (stat(LOG_DIR, &st) == -1)
-    {
-        if (mkdir(LOG_DIR, 0700) != 0)
-        {
-            perror("Failed to create log directory");
-            exit(EXIT_FAILURE);
-        }
-    }
+    struct stat buffer;
+    return (stat(filename, &buffer) == 0);
 }
 
 // wrk 명령 실행 및 로그 저장
@@ -96,7 +90,7 @@ void get_user_input(const char *prompt, char *buffer, size_t size, const char *d
     }
 }
 
-// URL을 파라미터로 받아 wrk 실행
+// URL과 Lua 스크립트 파일명을 파라미터로 받아 wrk 실행
 int run_wrk(const char *url)
 {
     if (url == NULL || strlen(url) == 0)
@@ -105,21 +99,40 @@ int run_wrk(const char *url)
         return EXIT_FAILURE;
     }
 
-    char threads[16], connections[16], duration[16];
+    char lua_script[256];
     char full_command[CMD_BUFFER_SIZE];
     char log_filename[256];
+    char threads[16], connections[16], duration[16];
     int cmd_length;
-
-    // 로그 디렉토리 생성
-    create_log_dir();
 
     // 사용자 입력 받기
     get_user_input("스레드 개수 입력", threads, sizeof(threads), DEFAULT_THREADS);
     get_user_input("연결 개수 입력", connections, sizeof(connections), DEFAULT_CONNECTIONS);
     get_user_input("테스트 지속 시간 입력 (예: 10s, 1m)", duration, sizeof(duration), DEFAULT_DURATION);
 
-    // wrk 명령 생성
-    cmd_length = snprintf(full_command, sizeof(full_command), "wrk -t%s -c%s -d%s %s", threads, connections, duration, url);
+    // Lua 스크립트 파일명 입력 받기
+    get_user_input("사용할 Lua 스크립트 파일명 입력 (없으면 Enter)", lua_script, sizeof(lua_script), "");
+
+    // Lua 스크립트 파일이 입력되었으면 존재하는지 확인
+    if (strlen(lua_script) > 0)
+    {
+        char lua_script_path[512];
+        snprintf(lua_script_path, sizeof(lua_script_path), "%s/%s", SCRIPT_DIR, lua_script);
+
+        if (!file_exists(lua_script_path))
+        {
+            fprintf(stderr, "Error: Lua script file '%s' does not exist in '%s'.\n", lua_script, SCRIPT_DIR);
+            return EXIT_FAILURE;
+        }
+
+        // Lua 스크립트가 존재하는 경우, 명령어 생성
+        cmd_length = snprintf(full_command, sizeof(full_command), "wrk -t%s -c%s -d%s -s %s %s", threads, connections, duration, lua_script_path, url);
+    }
+    else
+    {
+        // Lua 스크립트 없이 기본 wrk 명령
+        cmd_length = snprintf(full_command, sizeof(full_command), "wrk -t%s -c%s -d%s %s", threads, connections, duration, url);
+    }
 
     // 명령어 길이 확인
     if (cmd_length >= sizeof(full_command))
