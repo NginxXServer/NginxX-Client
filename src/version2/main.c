@@ -13,7 +13,7 @@ int main()
 
     // host, port를 url로 변환
     char url[256];
-    sprintf(url, "https://%s:%d", target_host, target_port);
+    sprintf(url, "http://%s:%d", target_host, target_port);
 
     // return run_client(target_port, target_host);
     return run_wrk(url);
