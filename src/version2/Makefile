@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -g
 
 bin = client
-src = main.c http/request.c
+src = main.c wrk/wrk.c
 
 all: $(bin)
 
