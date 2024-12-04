@@ -40,7 +40,7 @@ void run_siege(const char *command, const char *log_filename)
 int main()
 {
     // siege 명령어 구성
-    const char *siege_command = "siege -R siege.conf -c 500 -t 3m -f urls.txt";
+    const char *siege_command = "siege -R siege.conf -c 1100 -t 3m -f urls.txt";
 
     // 로그 파일 이름 입력
     char log_filename[256];

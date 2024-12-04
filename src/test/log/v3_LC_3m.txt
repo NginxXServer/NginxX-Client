@@ -1,13 +1,17 @@
-{	"transactions":			      229049,
-	"availability":			      100.00,
-	"elapsed_time":			      179.37,
-	"data_transferred":		      120.85,
-	"response_time":		        0.04,
-	"transaction_rate":		     1276.96,
-	"throughput":			        0.67,
-	"concurrency":			       49.89,
-	"successful_transactions":	      163635,
-	"failed_transactions":		           0,
-	"longest_transaction":		        1.18,
-	"shortest_transaction":		        0.00
-}
+** SIEGE 4.0.7
+** Preparing 500 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege...
+Transactions:		       14443 hits
+Availability:		       98.30 %
+Elapsed time:		      183.01 secs
+Data transferred:	     1907.14 MB
+Response time:		        2.52 secs
+Transaction rate:	       78.92 trans/sec
+Throughput:		       10.42 MB/sec
+Concurrency:		      198.91
+Successful transactions:       10629
+Failed transactions:	         250
+Longest transaction:	      128.55
+Shortest transaction:	        0.01
+ 
