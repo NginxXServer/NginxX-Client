@@ -39,8 +39,29 @@ void run_siege(const char *command, const char *log_filename)
 
 int main()
 {
-    // siege 명령어 구성
-    const char *siege_command = "siege -R siege.conf -c 1100 -t 3m -f urls.txt";
+    // 사용자 입력 변수
+    int connections;
+    char duration[16];
+
+    // 사용자로부터 커넥션 수 입력
+    printf("Enter the number of connections: ");
+    if (scanf("%d", &connections) != 1 || connections <= 0)
+    {
+        fprintf(stderr, "Invalid number of connections!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // 사용자로부터 실행 시간 입력
+    printf("Enter the duration (e.g., 3m, 5s): ");
+    if (scanf("%15s", duration) != 1 || strlen(duration) == 0)
+    {
+        fprintf(stderr, "Invalid duration!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // 버퍼 플러시
+    while (getchar() != '\n')
+        ;
 
     // 로그 파일 이름 입력
     char log_filename[256];
@@ -69,6 +90,15 @@ int main()
             exit(EXIT_FAILURE);
         }
     }
+
+    // siege 명령어 동적 생성
+    char siege_command[CMD_BUFFER_SIZE];
+    if (snprintf(siege_command, sizeof(siege_command), "siege -R siege.conf -c %d -t %s -f urls.txt", connections, duration) >= sizeof(siege_command))
+    {
+        fprintf(stderr, "Siege command is too long!\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("\nSiege command: %s\n\n", siege_command);
 
     // siege 명령어 실행 및 결과 저장
     run_siege(siege_command, log_filename);
